@@ -20,7 +20,16 @@ String[] rawTexts= {
   "You just don't need c#", 
   "I could use a dictionary now !",
   "Do or do not, there is no try",
-  "Tester c'est douter"
+  "Tester c'est douter",
+  "There is no spoon",
+  "I’m sorry, Dave. I’m afraid I can’t do that.",
+  "I find your lack of faith disturbing",
+  "Craftsmanship over crap",
+  "To iterate is human, to recurse divine.",
+  "To err is human, but to really foul things up you need a computer.",
+  "Good design adds value faster than it adds cost.",
+  "Deleted code is debugged code.",
+  "implicity is the ultimate sophistication."
 };
 
 String fontName = "Monaco";
@@ -30,7 +39,7 @@ float x;
 float y;
 int frame;
 Phrase[] phrases;
-int phrasesShown = 20;
+int phrasesShown = 23;
 
 class Phrase {
   String letters;
@@ -71,10 +80,13 @@ class Phrase {
   }
   
   void display(int time) {
+    if (!isAlive(frame)) {
+      return;
+    }
     for(int i=0;i<position;i++) {
       int currentOpacity = opacity[i];
       if (isDying(time)) {
-        opacity[i] /=2;
+        opacity[i] /=2; // should have some function about time to dim slowly.
       }
       fill(0, 255, 0, currentOpacity);
       text(letters.charAt(i), xPos, yPos+ i*17);
@@ -94,8 +106,8 @@ void setup() {
   float oldx = x;
   phrases = new Phrase[phrasesShown];
   for (int i=0; i< phrasesShown; i++) {
-     phrases[i] = new Phrase(oldx, y + int(random(height/2)), rawTexts[int(random(rawTexts.length))],int(random(20)));
-     oldx = oldx + 20 + int(random(50));
+     phrases[i] = new Phrase(oldx, y + int(random(height/2)), rawTexts[int(random(rawTexts.length))],int(random(40)));
+     oldx = oldx + 20 + int(random(30));
   }
   size(800, 600);
   font = createFont(fontName, fontSize, true);
@@ -107,9 +119,7 @@ void draw() {
   background(0);
   //scale(frame/100.0);
   for (int i=0; i< phrases.length; i++) {
-    if (phrases[i].isAlive(frame)) {
-      phrases[i].display(frame);
-    } 
+    phrases[i].display(frame); 
     if (phrases[i].isDead(frame)) {
       phrases[i] = new Phrase(phrases[i].xPos, y + int(random(height/2)), rawTexts[int(random(rawTexts.length))],int(random(frame+50)));
     }     
