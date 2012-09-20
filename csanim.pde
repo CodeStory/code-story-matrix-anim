@@ -18,7 +18,9 @@ String[] rawTexts= {
   "Scala will die", 
   "CoffeeScript is missing some ;", 
   "You just don't need c#", 
-  "I could use a dictionary now !"
+  "I could use a dictionary now !",
+  "Do or do not, there is no try",
+  "Tester c'est douter"
 };
 
 String fontName = "Monaco";
@@ -28,6 +30,7 @@ float x;
 float y;
 int frame;
 Phrase[] phrases;
+int phrasesShown = 20;
 
 class Phrase {
   String letters;
@@ -35,26 +38,50 @@ class Phrase {
   float xPos;
   float yPos;
   int position;
+  int birthDate;
+  int deathDate;
   
-  Phrase(float XX, float YY, String someLetters) {
+  Phrase(float XX, float YY, String someLetters, int birth) {
     letters = someLetters;
     xPos = XX;
     yPos = YY;
     position = -1;
+    birthDate = birth;
+    deathDate = birth + int(random(500));
     opacity = new int[letters.length()];
     for(int i=0;i<letters.length();i++) {
       opacity[i] = int(random(130))+126;
     }
   }
+    
+  boolean isBorn(int time) {
+    return birthDate < time;
+  }
   
-  void display() {
+  boolean isDying(int time) {
+    return deathDate - 10 < time;
+  }
+  
+  boolean isDead(int time) {  
+    return deathDate < time;
+  }
+  
+  boolean isAlive(int time) {
+    return isBorn(time) && !isDead(time);
+  }
+  
+  void display(int time) {
     for(int i=0;i<position;i++) {
-      fill(0, 255, 0, opacity[i]);
+      int currentOpacity = opacity[i];
+      if (isDying(time)) {
+        opacity[i] /=2;
+      }
+      fill(0, 255, 0, currentOpacity);
       text(letters.charAt(i), xPos, yPos+ i*17);
     }
-    fill(255, 255, 255, 255);
-    text("#", xPos, yPos + (position + 1)*17);
     if (position < letters.length()) {
+      fill(255, 255, 255, 255);
+      text("#", xPos, yPos + (position + 1)*17);
       position++;
     } 
   }
@@ -64,9 +91,11 @@ class Phrase {
 void setup() {
   x = 20;
   y = 20;
-  phrases = new Phrase[rawTexts.length];
-  for (int i=0; i< rawTexts.length; i++) {
-     phrases[i] = new Phrase(x + i*40, y + int(random(100)), rawTexts[i]);
+  float oldx = x;
+  phrases = new Phrase[phrasesShown];
+  for (int i=0; i< phrasesShown; i++) {
+     phrases[i] = new Phrase(oldx, y + int(random(height/2)), rawTexts[int(random(rawTexts.length))],int(random(20)));
+     oldx = oldx + 20 + int(random(50));
   }
   size(800, 600);
   font = createFont(fontName, fontSize, true);
@@ -76,10 +105,24 @@ void setup() {
 
 void draw() {
   background(0);
+  //scale(frame/100.0);
   for (int i=0; i< phrases.length; i++) {
-    phrases[i].display();
+    if (phrases[i].isAlive(frame)) {
+      phrases[i].display(frame);
+    } 
+    if (phrases[i].isDead(frame)) {
+      phrases[i] = new Phrase(phrases[i].xPos, y + int(random(height/2)), rawTexts[int(random(rawTexts.length))],int(random(frame+50)));
+    }     
   }
-  //filter(BLUR, 1);
+  filter(BLUR, 1);
+  displayFrame();
   frame++;
+}
+
+void displayFrame() {
+  fill(255, 255, 255, 255);
+  textFont(font, 30);
+  text(frame, width - textWidth(""+frame), height-5);
+  textFont(font, 20);
 }
 
